@@ -61,9 +61,10 @@ public class AirlineTicketingSystem {
 											"3:check booked flight informtation \n"+
 											"4:add flight (Admin only) \n"+ 
 											"5:delete flight (Admin only)\n"+
-											"6:check all member information (Admin only)\n"+ 
-											//"7:Add me as flight Admin (Admin only)\n"+
-											"7:log out \n"+"Enter a choice: ");
+											"6:check all member information (Admin only) \n"+
+											"7:cancel booked flight\n"+
+											"8:add a new flight Admin  (Admin only) \n"+
+											"9:log out \n"+"Enter a choice: ");
 											
 				                        }
 				      else              {
@@ -72,7 +73,8 @@ public class AirlineTicketingSystem {
 				    	                    "1:check all flights information \n"+
 									        "2:booking flight \n"+
 									        "3:check booked flight informtation \n"+
-									        "7:log out \n"+"Enter a choice: ");
+									        "7:cancel booked flight\n"+
+									        "9:log out \n"+"Enter a choice: ");
 				    	  
 				                        }
 				
@@ -100,10 +102,35 @@ public class AirlineTicketingSystem {
 					printFlightByDepartureAndArrivalCity(conn, departureCity, arrivalCity);
 					
 					System.out.println("Enter a flight number to book: ");
-					int flightId = input.nextInt();					
+					int flightId = input.nextInt();	
+					String seat_capacity="",booked_seats="";					
+					PreparedStatement myStat = conn.prepareStatement(Queries.GET_FLIGHT_BY_ID);
+					myStat.setInt(1, flightId);
+					ResultSet resultSet = myStat.executeQuery();
+					while(resultSet.next()){
+						seat_capacity= resultSet.getString("seatCapacity");
+						System.out.println("*seatCapacity"+ seat_capacity);
+					}
+					
+					myStat = conn.prepareStatement(Queries.GET_BOOKED_SEATS);
+					myStat.setInt(1, flightId);
+					resultSet = myStat.executeQuery();
+					while(resultSet.next()){
+						booked_seats= resultSet.getString("Count");
+						System.out.println("*booked_seats"+ booked_seats);
+					}
+					
+					if (Integer.valueOf(seat_capacity)==Integer.valueOf(booked_seats))
+					{
+						System.out.println("*"+"We are sorry this flight is already booked - Please try again in some time or check all other flights !"+"*");
+					}
+					
+					else
+					{
 					//put into the order table in database
 					bookFlightIDbyMemberID(conn, member,flightId);
 					System.out.println("Your flight has booked successfully.");
+					}
 					
 					break;
 				case 3:
@@ -135,24 +162,43 @@ public class AirlineTicketingSystem {
 					
 					break;
 					
-				/*case 7:
+				case 7:
+					System.out.println("Your booked flight informtation is here: ");
+					//show booking info
+					FlightIdList = getFlightIdsByMemberId(member, conn);
+					printFlightInfoByFlightId(conn, FlightIdList);
+					System.out.println("Please choose the flightid of the flight you wish to cancel :");
+					flightId = input.nextInt();	
+					System.out.println(flightId);
+					Cancelmemberflight(conn,flightId,member);
+					break;
+					
+				case 8:
+					System.out.println("****welcome to adding a new flight Admin**** \n");
+					//member=1011;
+					member=createUser(input, conn);
+					updateAdminInfo(conn,member);
 					System.out.println("All flight informtation are here: ");
 					printAllFlightInfo(conn);
-					System.out.println("Please choose the flightid of the flight you wish to be added as Admin :");
-					flightId = input.nextInt();	
-					Addasflightadmin(conn,flightId,member);
-					break;*/
-				case 7:
-					System.out.println("Logged out.\n");
+					System.out.println("Please enter the flight ID the new Admin wishes to be an Admin of: \n");
+					flightId = input.nextInt();
+					PreparedStatement updAFPS = conn.prepareStatement(Queries.UPDATE_ADMIN_FLIGHT);
+					updAFPS.setInt(1, flightId);
+					updAFPS.executeUpdate();
+					System.out.println("The FlightID has been updated with the new Admin");
+					
+					break;
+				case 9:
+					System.out.println("Logged out - Thank You for using Airline ticketing system \n");
 				    System.exit(0);
 				   
 					break;
 					
 				default:
-						System.out.println("Invalid input.Enter an option from 1 to 7: ");
+						System.out.println("Invalid input.Enter an option from 1 to 9: ");
 					
 				}
-				System.out.print("Ready to go back to the main menu? press any key except 'n' ");
+				System.out.print("Ready to go back to the main menu? press any key");
 				quit = input.next().toLowerCase();
 
 			
@@ -197,9 +243,11 @@ public class AirlineTicketingSystem {
 												"2:booking flight \n"+
 												"3:check booked flight informtation \n"+
 												"4:add flight (Admin only) \n"+ 
-												"5:delete flight (Admin only)\n"+
-												"6:check all member information (Admin only)\n"+ 
-												"7:log out \n"+"Enter a choice: ");
+												"5:delete flight (Admin only) \n"+
+												"6:check all member information (Admin only) \n"+ 
+												"7:cancel booked flight\n"+
+												"8:add a new flight Admin  (Admin only) \n"+
+												"9:log out \n"+"Enter a choice: ");
 												
 					                        }
 					    else              {
@@ -208,7 +256,7 @@ public class AirlineTicketingSystem {
 					    	                    "1:check all flights information \n"+
 										        "2:booking flight \n"+
 										        "3:check booked flight informtation \n"+
-										        "7:log out \n"+"Enter a choice: ");
+										        "9:log out \n"+"Enter a choice: ");
 					    	  
 					                        }
 					
@@ -264,17 +312,45 @@ public class AirlineTicketingSystem {
 						printAllMemberInfo(conn);
 						
 						break;
+						
+					case 7:
+						System.out.println("Your booked flight informtation is here: ");
+						//show booking info
+						FlightIdList = getFlightIdsByMemberId(member, conn);
+						printFlightInfoByFlightId(conn, FlightIdList);
+						System.out.println("Please choose the flightid of the flight you wish to cancel :");
+						flightId = input.nextInt();	
+						System.out.println(flightId);
+						Cancelmemberflight(conn,flightId,member);
+						break;
+						
 					case 8:
-						System.out.println("Logged out.\n");
+						System.out.println("****welcome to adding a new flight Admin**** \n");
+						//member=1011;
+						member=createUser(input, conn);
+						updateAdminInfo(conn,member);
+						System.out.println("All flight informtation are here: ");
+						printAllFlightInfo(conn);
+						System.out.println("Please enter the flight ID the new Admin wishes to be an Admin of: \n");
+						flightId = input.nextInt();
+						PreparedStatement updAFPS = conn.prepareStatement(Queries.UPDATE_ADMIN_FLIGHT);
+						updAFPS.setInt(1, flightId);
+						updAFPS.executeUpdate();
+						System.out.println("The FlightID has been updated with the new Admin");
+						
+						break;
+						
+					case 9:
+						System.out.println("Logged out - Thank You for using Airline ticketing system \n");
 					    System.exit(0);
 					   
 						break;
 						
 					default:
-							System.out.println("Invalid input.Enter an option from 1 to 7: ");
+							System.out.println("Invalid input.Enter an option from 1 to 9: ");
 						
 					}
-					System.out.print("Ready to go back to the main menu? press any key except 'n' ");
+					System.out.print("Ready to go back to the main menu? press any key");
 					quit = input.next().toLowerCase();
 
 					
@@ -309,20 +385,22 @@ public class AirlineTicketingSystem {
 		else{
 				//member not found
 			System.out.println("Entered user registration");
-			createUser(input, conn);
+			member=createUser(input, conn);
 				
 			}
 //TO DO PRANJAL
-				/*else (membership.equalsIgnoreCase("N")){
-			
-		}*/
+	
+				
+		}
 			
 		
 
 
 
-			}
+/*			
+else (membership.equalsIgnoreCase("N")){
 	
+}*/
 			
 
 	/*
@@ -355,6 +433,34 @@ public class AirlineTicketingSystem {
 		}		
 		System.out.println("You are added as Admin for the Flight!");
 	}*/
+
+
+
+	private static void updateAdminInfo(Connection conn, int member2) throws SQLException {
+		// TODO Auto-generated method stub
+		PreparedStatement CancelmemberflightPS = conn.prepareStatement(Queries.ADD_NEW_ADMIN);
+		CancelmemberflightPS.setInt(1, member2);
+		//CancelmemberflightPS.setInt(2, flightId);
+		CancelmemberflightPS.executeUpdate();
+		System.out.println("SP execution success!");
+		
+	}
+
+
+
+
+
+	private static void Cancelmemberflight(Connection conn, int flightId, int member2) throws SQLException {
+		// TODO Auto-generated method stub
+		
+		PreparedStatement CancelmemberflightPS = conn.prepareStatement(Queries.DELETE_A_BOOKING);
+		CancelmemberflightPS.setInt(1, member2);
+		CancelmemberflightPS.setInt(2, flightId);
+		CancelmemberflightPS.executeUpdate();
+		System.out.println("Your booked flight ID:"+flightId+" has been successfuly canceled !");
+		
+		
+	}
 
 
 
