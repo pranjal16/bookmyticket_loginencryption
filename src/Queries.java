@@ -51,10 +51,14 @@ public class Queries {
 	public static final String INSERT_A_BOOKING = "INSERT INTO [airlineReservationDB].dbo.Booking(memberID, flightID) VALUES (? ,?)";
 	public static final String GET_BOOKINGID_BY_MemberID_AND_FLIGHTID = "SELECT bookingID FROM Booking WHERE flightID=? AND MemberID=?";
 	public static final String GET_FLIGHT_BY_MemberID = "SELECT * FROM [airlineReservationDB].dbo.Booking WHERE MemberID=?";
-	
+	public static final String DELETE_A_BOOKING = "DELETE FROM [airlineReservationDB].dbo.Booking WHERE memberID = ? AND flightID = ?";
+	public static final String GET_BOOKED_SEATS = "select count(bookingID) AS [Count] from [airlineReservationDB].dbo.booking where FlightID= ?"; 
 	/*
 	 * Admin Table
 	 */
+	public static final String ADD_NEW_ADMIN ="Exec [airlineReservationDB].dbo.test @MemberID=?";
+	public static final String UPDATE_ADMIN_FLIGHT ="Exec [airlineReservationDB].dbo.UpdateAdminFlightCode @flightID=?";
+
 	
 	/*public static final String ADD_ME_AS_FLIGHT_ADMIN = "INSERT INTO [airlineReservationDB].dbo.Admin(AdminID,flightCode) VALUES (? ,?)";*/
 	
